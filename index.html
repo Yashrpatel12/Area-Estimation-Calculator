@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Area Estimation Calculator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gradient-to-br from-slate-900 to-slate-800 min-h-screen flex items-center justify-center text-white px-4 py-6">
+
+<div class="bg-slate-950 p-5 sm:p-8 rounded-2xl shadow-2xl w-full max-w-lg">
+
+<h1 class="text-xl sm:text-2xl font-bold mb-6 text-center">Area Estimation Calculator</h1>
+
+<!-- MODE SELECT -->
+<div class="mb-6">
+<label class="block mb-2 text-sm text-slate-400">Select Mode</label>
+<select id="mode"
+class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 focus:ring-2 focus:ring-blue-500 text-base">
+<option value="area">Manual Area Entry</option>
+<option value="plot">Plot Size (Feet)</option>
+</select>
+</div>
+
+<!-- AREA MODE -->
+<div id="areaMode" class="space-y-4">
+
+<div>
+<label class="block mb-1 text-sm text-slate-400">Enter Area</label>
+<input id="areaInput" type="number"
+class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-base">
+</div>
+
+<div>
+<label class="block mb-1 text-sm text-slate-400">Select Unit</label>
+<select id="areaUnit"
+class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-base">
+<option value="var">Var (Sq. Yard)</option>
+<option value="sqft">Sqft</option>
+<option value="acre">Acre</option>
+</select>
+</div>
+
+</div>
+
+<!-- PLOT MODE -->
+<div id="plotMode" class="space-y-4 hidden">
+
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div>
+<label class="block mb-1 text-sm text-slate-400">Length (Feet)</label>
+<input id="lengthInput" type="number"
+class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-base">
+</div>
+
+<div>
+<label class="block mb-1 text-sm text-slate-400">Width (Feet)</label>
+<input id="widthInput" type="number"
+class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-base">
+</div>
+</div>
+
+</div>
+
+<!-- PRICE INPUT -->
+<div class="mt-6">
+<label class="block mb-1 text-sm text-slate-400">Effective Price per Var (₹)</label>
+<input id="pricePerVarInput" type="number"
+class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-base">
+</div>
+
+<!-- DEVELOPMENT COST INPUT -->
+<div class="mt-4">
+<label class="block mb-1 text-sm text-slate-400">Development Cost per Sq. Ft. (₹)</label>
+<input id="devCostInput" type="number"
+class="w-full p-3 rounded-lg bg-slate-800 border border-slate-700 text-base">
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="mt-6 hidden overflow-hidden">
+
+<h2 class="text-lg font-semibold mb-3 border-b border-slate-700 pb-2">Area Breakdown</h2>
+
+<div class="space-y-2 text-sm">
+<p>📏 Var: <span id="varVal"></span></p>
+<p>📐 Sqft: <span id="sqftVal"></span></p>
+<p>🌾 Acre: <span id="acreVal"></span></p>
+</div>
+
+<div id="valueSection">
+<h2 class="text-lg font-semibold mt-6 mb-3 border-b border-slate-700 pb-2">Value Breakdown</h2>
+
+<div class="space-y-2 text-sm">
+<p>💰 Total Cost: <span id="totalCost"></span></p>
+<p class="text-slate-400 text-xs break-words">In Words: <span id="totalCostWords"></span></p>
+<p>₹ per Sqft: <span id="pricePerSqft"></span></p>
+<p>₹ per Acre: <span id="pricePerAcre"></span></p>
+</div>
+</div>
+
+<!-- DEVELOPMENT COST SECTION -->
+<div id="devCostSection" class="hidden">
+<h2 class="text-lg font-semibold mt-6 mb-3 border-b border-slate-700 pb-2">Estimated Development Cost</h2>
+<div class="space-y-2 text-sm">
+<p>🏗️ Estimated Development Cost: <span id="devCostTotal"></span></p>
+<p class="text-slate-400 text-xs">= <span id="devCostFormula"></span></p>
+<p class="text-slate-400 text-xs break-words">In Words: <span id="devCostWords"></span></p>
+</div>
+</div>
+
+<!-- TOTAL PROPERTY COST SECTION -->
+<div id="totalPropertySection" class="hidden">
+<h2 class="text-lg font-semibold mt-6 mb-3 border-b border-slate-700 pb-2">Total Property Cost</h2>
+<div class="space-y-2 text-sm">
+<p>🏠 Total Property Cost: <span id="totalPropertyCost"></span></p>
+<p class="text-slate-400 text-xs break-words">In Words: <span id="totalPropertyCostWords"></span></p>
+</div>
+
+<h2 class="text-lg font-semibold mt-6 mb-3 border-b border-slate-700 pb-2">Investment Metrics (All-in)</h2>
+<div class="space-y-2 text-sm">
+<p>📊 Final Cost per Sqft: <span id="finalCostPerSqft"></span></p>
+<p>📊 Final Cost per Var: <span id="finalCostPerVar"></span></p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const mode = document.getElementById("mode");
+const areaMode = document.getElementById("areaMode");
+const plotMode = document.getElementById("plotMode");
+
+const areaInput = document.getElementById("areaInput");
+const areaUnit = document.getElementById("areaUnit");
+
+const lengthInput = document.getElementById("lengthInput");
+const widthInput = document.getElementById("widthInput");
+
+const pricePerVarInput = document.getElementById("pricePerVarInput");
+const devCostInput = document.getElementById("devCostInput");
+
+mode.addEventListener("change", toggleMode);
+areaInput.addEventListener("input", calculate);
+areaUnit.addEventListener("change", calculate);
+lengthInput.addEventListener("input", calculate);
+widthInput.addEventListener("input", calculate);
+pricePerVarInput.addEventListener("input", calculate);
+devCostInput.addEventListener("input", calculate);
+
+function toggleMode() {
+if (mode.value === "area") {
+areaMode.classList.remove("hidden");
+plotMode.classList.add("hidden");
+} else {
+plotMode.classList.remove("hidden");
+areaMode.classList.add("hidden");
+}
+calculate();
+}
+
+function numberToWords(num) {
+
+const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
+'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen',
+'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+
+const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+function convert(n) {
+if (n < 20) return a[n];
+if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? ' ' + a[n % 10] : '');
+if (n < 1000) return a[Math.floor(n / 100)] + ' Hundred ' + (n % 100 ? convert(n % 100) : '');
+return '';
+}
+
+if (num === 0) return 'Zero Rupees Only';
+
+let words = '';
+
+let crore = Math.floor(num / 10000000);
+num %= 10000000;
+
+let lakh = Math.floor(num / 100000);
+num %= 100000;
+
+let thousand = Math.floor(num / 1000);
+num %= 1000;
+
+if (crore) words += convert(crore) + ' Crore ';
+if (lakh) words += convert(lakh) + ' Lakh ';
+if (thousand) words += convert(thousand) + ' Thousand ';
+if (num) words += convert(num);
+
+return words.trim() + ' Rupees Only';
+}
+
+function calculate() {
+
+let sqft = 0;
+
+if (mode.value === "area") {
+const area = parseFloat(areaInput.value);
+if (!area) return hideResults();
+
+if (areaUnit.value === "var") sqft = area * 9;
+if (areaUnit.value === "sqft") sqft = area;
+if (areaUnit.value === "acre") sqft = area * 43560;
+}
+
+if (mode.value === "plot") {
+const length = parseFloat(lengthInput.value);
+const width = parseFloat(widthInput.value);
+if (!length || !width) return hideResults();
+sqft = length * width;
+}
+
+const pricePerVar = parseFloat(pricePerVarInput.value);
+const devCostPerSqft = parseFloat(devCostInput.value);
+
+if (!sqft || (!pricePerVar && !devCostPerSqft)) return hideResults();
+
+const varValue = sqft / 9;
+const acreValue = sqft / 43560;
+
+document.getElementById("varVal").innerText = varValue.toLocaleString("en-IN");
+document.getElementById("sqftVal").innerText = sqft.toLocaleString("en-IN");
+document.getElementById("acreVal").innerText = acreValue.toFixed(4);
+
+// Compute land cost and dev cost
+const landCost = pricePerVar ? varValue * pricePerVar : 0;
+const devTotal = devCostPerSqft ? sqft * devCostPerSqft : 0;
+
+const valueSection = document.getElementById("valueSection");
+if (pricePerVar) {
+const pricePerSqft = landCost / sqft;
+const pricePerAcre = landCost / acreValue;
+
+document.getElementById("totalCost").innerText =
+"₹ " + landCost.toLocaleString("en-IN");
+
+document.getElementById("totalCostWords").innerText =
+numberToWords(Math.round(landCost));
+
+document.getElementById("pricePerSqft").innerText =
+"₹ " + pricePerSqft.toLocaleString("en-IN");
+
+document.getElementById("pricePerAcre").innerText =
+"₹ " + pricePerAcre.toLocaleString("en-IN");
+
+valueSection.classList.remove("hidden");
+} else {
+valueSection.classList.add("hidden");
+}
+
+const devCostSection = document.getElementById("devCostSection");
+if (devCostPerSqft) {
+document.getElementById("devCostTotal").innerText =
+"₹ " + devTotal.toLocaleString("en-IN");
+
+document.getElementById("devCostFormula").innerText =
+sqft.toLocaleString("en-IN") + " Sqft × ₹" + devCostPerSqft.toLocaleString("en-IN") + " per Sqft";
+
+document.getElementById("devCostWords").innerText =
+numberToWords(Math.round(devTotal));
+
+devCostSection.classList.remove("hidden");
+} else {
+devCostSection.classList.add("hidden");
+}
+
+// Total Property Cost calculation
+const totalPropertySection = document.getElementById("totalPropertySection");
+const totalPropertyCost = landCost + devTotal;
+
+if (totalPropertyCost > 0) {
+document.getElementById("totalPropertyCost").innerText =
+"₹ " + totalPropertyCost.toLocaleString("en-IN");
+
+document.getElementById("totalPropertyCostWords").innerText =
+numberToWords(Math.round(totalPropertyCost));
+
+const finalCostPerSqft = totalPropertyCost / sqft;
+const finalCostPerVar = totalPropertyCost / varValue;
+
+document.getElementById("finalCostPerSqft").innerText =
+"₹ " + finalCostPerSqft.toLocaleString("en-IN", {maximumFractionDigits: 2});
+
+document.getElementById("finalCostPerVar").innerText =
+"₹ " + finalCostPerVar.toLocaleString("en-IN", {maximumFractionDigits: 2});
+
+totalPropertySection.classList.remove("hidden");
+} else {
+totalPropertySection.classList.add("hidden");
+}
+
+document.getElementById("results").classList.remove("hidden");
+}
+
+function hideResults(){
+document.getElementById("results").classList.add("hidden");
+}
+
+</script>
+
+</body>
+</html>
